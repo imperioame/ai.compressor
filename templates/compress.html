@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI.COMPRESSOR</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <script src="https://unpkg.com/feather-icons"></script>
+</head>
+<body>
+    <header>
+        <h1>AI.COMPRESSOR</h1>
+        <nav>
+            <a href="{{ url_for('compress_project') }}" class="active">Compress</a>
+            <a href="{{ url_for('decompress_project') }}">Decompress</a>
+        </nav>
+    </header>
+
+    <main>
+        <section id="about">
+            <h2>What's this?</h2>
+            <p><strong>AI.Compressor</strong> is a <strong>tool</strong> to <strong>compress text</strong> contents and projects aimed <strong>to feed AI chat tools like Claude.ai or ChatGPT</strong> with context efficiently.</p>
+        </section>
+
+        <section id="how-to-use">
+            <h2>How to use?</h2>
+            <div class="steps">
+                <div class="step">
+                    <i data-feather="folder"></i>
+                    <h3>Load</h3>
+                    <p>Your files or folders</p>
+                </div>
+                <div class="step">
+                    <i data-feather="settings"></i>
+                    <h3>Select</h3>
+                    <p>Compression method and output format</p>
+                </div>
+                <div class="step">
+                    <i data-feather="zap"></i>
+                    <h3>Compress</h3>
+                    <p>By just pressing the button</p>
+                </div>
+                <div class="step">
+                    <i data-feather="download"></i>
+                    <h3>Download</h3>
+                    <p>Automatically, check your downloads</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="compress-form">
+            <form id="compression-form" method="post" enctype="multipart/form-data">
+                <div id="drop-zone" ondrop="handleDrop(event)" ondragover="preventDefault(event)">
+                    <p>Drop your project folder here or click to select</p>
+                    <input type="file" id="files" name="files" multiple hidden>
+                    <i data-feather="plus"></i>
+                    <span id="file-count">0 files selected</span>
+                </div>
+
+                <div class="form-group">
+                    <label for="compression">Compression method</label>
+                    <select name="compression" id="compression">
+                        <option value="high" selected>High Compression (Slower)</option>
+                        <option value="standard">Standard (Faster)</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="format">Output format</label>
+                    <select name="format" id="format">
+                        <option value="json" selected>JSON</option>
+                        <option value="csv">CSV</option>
+                        <option value="txt">TXT</option>
+                    </select>
+                </div>
+
+                <button type="submit" id="compress-button">Compress</button>
+            </form>
+            <div id="success-message" class="hidden">Check your downloads</div>
+        </section>
+
+        <div id="prompts" class="section hidden">
+            <h2>PROMPTS</h2>
+            <p>Use these prompts in the chat Apps, to provide context</p>
+          
+            <div class="prompt-grid">
+              <div class="prompt-box">
+                <h3>For ChatGPT</h3>
+                <p>I'm providing you with a compressed project. The compression method used is <span class="compression-method"></span>. When decompressed, you'll see a file structure containing [brief description]. Please analyze the contents and provide insights on [specific task or question].</p>
+              </div>
+          
+              <div class="prompt-box">
+                <h3>For Claude.ai</h3>
+                <p>I've compressed a project using <span class="compression-method"></span> compression. Upon decompression, you'll find a file structure that includes [brief description]. Could you examine the contents and offer your thoughts on [specific task or question]?</p>
+              </div>
+          
+              <div class="prompt-box">
+                <h3>For Google Gemini</h3>
+                <p>I'm sharing a compressed project with you. It was compressed using <span class="compression-method"></span>. When you decompress it, you'll see a file structure containing [brief description]. Please analyze the contents and provide your insights on [specific task or question].</p>
+              </div>
+          
+              <div class="prompt-box">
+                <h3>For Microsoft Copilot</h3>
+                <p>I've uploaded a compressed project. The compression method used is <span class="compression-method"></span>. Once decompressed, you'll find a file structure that includes [brief description]. Could you examine the contents and share your thoughts on [specific task or question]?</p>
+              </div>
+            </div>
+          
+            <p>Note: Replace [brief description] with your project description and [specific task or question] with your enquiries or doubts.</p>
+          </div>
+    </main>
+
+    <footer>
+        <div class="footer-content">
+            <h2>AI.COMPRESSOR</h2>
+            <p>2024 J. Mario Amé</p>
+        </div>
+        <div class="footer-links">
+            <h3>Mario's Contact</h3>
+            <a href="http://marioa.me/" target="_blank">Website</a>
+            <a href="https://www.linkedin.com/in/julian-ame/" target="_blank">LinkedIn</a>
+            <a href="https://github.com/imperioame" target="_blank">GitHub</a>
+        </div>
+    </footer>
+
+    <script>
+        feather.replace();
+
+        function handleDrop(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            const items = e.dataTransfer.items;
+            const files = [];
+            
+            function traverseFileTree(item, path) {
+                if (item.isFile) {
+                    item.file(function(file) {
+                        file.fullPath = path + file.name;
+                        files.push(file);
+                    });
+                } else if (item.isDirectory) {
+                    const dirReader = item.createReader();
+                    dirReader.readEntries(function(entries) {
+                        for (let i = 0; i < entries.length; i++) {
+                            traverseFileTree(entries[i], path + item.name + "/");
+                        }
+                    });
+                }
+            }
+            
+            for (let i = 0; i < items.length; i++) {
+                const item = items[i].webkitGetAsEntry();
+                if (item) {
+                    traverseFileTree(item, "/");
+                }
+            }
+            
+            setTimeout(function() {
+                const dataTransfer = new DataTransfer();
+                files.forEach(file => dataTransfer.items.add(file));
+                document.getElementById('files').files = dataTransfer.files;
+                updateFileCount();
+            }, 1000);  // Wait for async operations to complete
+        }
+        
+        function preventDefault(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+
+        function updateFileCount() {
+            const fileCount = document.getElementById('files').files.length;
+            document.getElementById('file-count').textContent = fileCount + " files selected";
+        }
+
+        document.getElementById('drop-zone').onclick = function() {
+            document.getElementById('files').click();
+        }
+
+        document.getElementById('files').onchange = updateFileCount;
+
+        document.querySelector('form').onsubmit = function(e) {
+            e.preventDefault();
+            // Simulating compression process
+            setTimeout(function() {
+                document.getElementById('success-message').classList.remove('hidden');
+                document.getElementById('prompts').scrollIntoView({ behavior: 'smooth' });
+            }, 2000);
+        }
+
+        document.getElementById('compression-form').onsubmit = function(e) {
+            e.preventDefault();
+            
+            var formData = new FormData(this);
+
+            fetch('/', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('success-message').classList.remove('hidden');
+                document.getElementById('prompts').classList.remove('hidden');
+                document.getElementById('prompts').scrollIntoView({ behavior: 'smooth' });
+
+                // Update compression method in prompts
+                document.querySelectorAll('.compression-method').forEach(span => {
+                    if (data.compression_method === 'standard') {
+                        span.textContent = "zlib";
+                    } else if (data.compression_method === 'high'){
+                        span.textContent = "Zstandard (zstd)";
+                    }
+                });
+
+                // Trigger download
+                window.location.href = '/download/' + encodeURIComponent(data.file_path);
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        }
+    </script>
+</body>
+</html>

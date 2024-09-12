@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI.COMPRESSOR - Decompress</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <script src="https://unpkg.com/feather-icons"></script>
+</head>
+<body>
+    <header>
+        <h1>AI.COMPRESSOR</h1>
+        <nav>
+            <a href="{{ url_for('compress_project') }}">Compress</a>
+            <a href="{{ url_for('decompress_project') }}" class="active">Decompress</a>
+        </nav>
+    </header>
+
+    <main>
+        <section id="about">
+            <h2>What's this?</h2>
+            <p><strong>AI.Compressor</strong> is a <strong>tool</strong> to <strong>decompress text</strong> contents and projects that were previously compressed using our compression tool.</p>
+        </section>
+
+        <section id="how-to-use">
+            <h2>How to use?</h2>
+            <div class="steps">
+                <div class="step">
+                    <i data-feather="upload"></i>
+                    <h3>Upload</h3>
+                    <p>Your compressed file</p>
+                </div>
+                <div class="step">
+                    <i data-feather="settings"></i>
+                    <h3>Select</h3>
+                    <p>Decompression method</p>
+                </div>
+                <div class="step">
+                    <i data-feather="zap"></i>
+                    <h3>Decompress</h3>
+                    <p>By just pressing the button</p>
+                </div>
+                <div class="step">
+                    <i data-feather="download"></i>
+                    <h3>Download</h3>
+                    <p>Automatically, check your downloads</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="decompress-form">
+            <form method="post" enctype="multipart/form-data">
+                <div id="drop-zone" ondrop="handleDrop(event)" ondragover="preventDefault(event)">
+                    <p>Drop your compressed file here or click to select</p>
+                    <input type="file" id="compressed_file" name="compressed_file" hidden>
+                    <i data-feather="plus"></i>
+                    <span id="file-name">No file selected</span>
+                </div>
+
+                <div class="form-group">
+                    <label for="compression">Decompression method</label>
+                    <select name="compression" id="compression">
+                        <option value="high" selected>High Compression (Slower)</option>
+                        <option value="standard">Standard (Faster)</option>
+                    </select>
+                </div>
+
+                <button type="submit" id="decompress-button">Decompress</button>
+            </form>
+            <div id="success-message" class="hidden">Check your downloads</div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="footer-content">
+            <h2>AI.COMPRESSOR</h2>
+            <p>2024 J. Mario Amé</p>
+        </div>
+        <div class="footer-links">
+            <h3>Mario's Contact</h3>
+            <a href="http://marioa.me/" target="_blank">Website</a>
+            <a href="https://www.linkedin.com/in/julian-ame/" target="_blank">LinkedIn</a>
+            <a href="https://github.com/imperioame" target="_blank">GitHub</a>
+        </div>
+    </footer>
+
+    <script>
+        feather.replace();
+
+        function handleDrop(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            const file = e.dataTransfer.files[0];
+            if (file) {
+                document.getElementById('compressed_file').files = e.dataTransfer.files;
+                updateFileName();
+            }
+        }
+        
+        function preventDefault(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+
+        function updateFileName() {
+            const fileName = document.getElementById('compressed_file').files[0]?.name || 'No file selected';
+            document.getElementById('file-name').textContent = fileName;
+        }
+
+        document.getElementById('drop-zone').onclick = function() {
+            document.getElementById('compressed_file').click();
+        }
+
+        document.getElementById('compressed_file').onchange = updateFileName;
+
+        document.querySelector('form').onsubmit = function(e) {
+            // Don't prevent default here, as we want the form to submit
+            setTimeout(function() {
+                document.getElementById('success-message').classList.remove('hidden');
+            }, 2000);
+        }
+    </script>
+</body>
+</html>
